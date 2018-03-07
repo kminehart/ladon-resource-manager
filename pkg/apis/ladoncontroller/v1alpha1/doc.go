@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package samplecontroller
+// +k8s:deepcopy-gen=package
 
-const (
-	GroupName = "samplecontroller.k8s.io"
-)
+// Package v1alpha1 is the v1alpha1 version of the API.
+// +groupName=ladoncontroller.k8s.io
+package v1alpha1

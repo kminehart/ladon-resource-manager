@@ -21,8 +21,8 @@ package v1alpha1
 import (
 	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
 	rest "k8s.io/client-go/rest"
-	v1alpha1 "k8s.io/sample-controller/pkg/apis/samplecontroller/v1alpha1"
-	"k8s.io/sample-controller/pkg/client/clientset/versioned/scheme"
+	v1alpha1 "github.com/kminehart/ladon-resource-manager/pkg/apis/ladoncontroller/v1alpha1"
+	"github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned/scheme"
 )
 
 type SamplecontrollerV1alpha1Interface interface {
@@ -30,7 +30,7 @@ type SamplecontrollerV1alpha1Interface interface {
 	FoosGetter
 }
 
-// SamplecontrollerV1alpha1Client is used to interact with features provided by the samplecontroller.k8s.io group.
+// SamplecontrollerV1alpha1Client is used to interact with features provided by the ladoncontroller.k8s.io group.
 type SamplecontrollerV1alpha1Client struct {
 	restClient rest.Interface
 }

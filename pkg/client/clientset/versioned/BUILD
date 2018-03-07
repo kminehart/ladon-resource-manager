@@ -6,14 +6,14 @@ go_library(
         "clientset.go",
         "doc.go",
     ],
-    importpath = "k8s.io/sample-controller/pkg/client/clientset/versioned",
+    importpath = "github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/k8s.io/client-go/discovery:go_default_library",
         "//vendor/k8s.io/client-go/rest:go_default_library",
         "//vendor/k8s.io/client-go/util/flowcontrol:go_default_library",
-        "//vendor/k8s.io/sample-controller/pkg/client/clientset/versioned/typed/samplecontroller/v1alpha1:go_default_library",
+        "//vendor/github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned/typed/ladoncontroller/v1alpha1:go_default_library",
     ],
 )
 
@@ -28,9 +28,9 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//staging/src/k8s.io/sample-controller/pkg/client/clientset/versioned/fake:all-srcs",
-        "//staging/src/k8s.io/sample-controller/pkg/client/clientset/versioned/scheme:all-srcs",
-        "//staging/src/k8s.io/sample-controller/pkg/client/clientset/versioned/typed/samplecontroller/v1alpha1:all-srcs",
+        "//staging/src/github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned/fake:all-srcs",
+        "//staging/src/github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned/scheme:all-srcs",
+        "//staging/src/github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned/typed/ladoncontroller/v1alpha1:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

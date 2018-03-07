@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["register.go"],
-    importpath = "k8s.io/sample-controller/pkg/apis/samplecontroller",
+    importpath = "github.com/kminehart/ladon-resource-manager/pkg/apis/ladoncontroller",
     visibility = ["//visibility:public"],
 )
 
@@ -18,7 +18,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//staging/src/k8s.io/sample-controller/pkg/apis/samplecontroller/v1alpha1:all-srcs",
+        "//staging/src/github.com/kminehart/ladon-resource-manager/pkg/apis/ladoncontroller/v1alpha1:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

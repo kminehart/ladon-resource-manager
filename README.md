@@ -1,4 +1,4 @@
-# sample-controller
+# ladon-controller
 
 This repository implements a simple controller for watching Foo resources as
 defined with a CustomResourceDefinition (CRD).
@@ -16,7 +16,7 @@ do this yourself using the `./hack/update-codegen.sh` script.
 The `update-codegen` script will automatically generate the following files &
 directories:
 
-* `pkg/apis/samplecontroller/v1alpha1/zz_generated.deepcopy.go`
+* `pkg/apis/ladoncontroller/v1alpha1/zz_generated.deepcopy.go`
 * `pkg/client/`
 
 Changes should not be made to these files manually, and when creating your own
@@ -29,7 +29,7 @@ This is an example of how to build a kube-like controller with a single type.
 
 ## Running
 
-**Prerequisite**: Since the sample-controller uses `apps/v1` deployments, the Kubernetes cluster version should be greater than 1.9.
+**Prerequisite**: Since the ladon-controller uses `apps/v1` deployments, the Kubernetes cluster version should be greater than 1.9.
 
 ```sh
 # assumes you have a working kubeconfig, not required if operating in-cluster
@@ -95,7 +95,7 @@ The schema in the [example CRD](./artifacts/examples/crd.yaml) applies the follo
 
 You can clean up the created CustomResourceDefinition with:
 
-    $ kubectl delete crd foos.samplecontroller.k8s.io
+    $ kubectl delete crd foos.ladoncontroller.k8s.io
 
 ## Compatibility
 
@@ -104,7 +104,7 @@ k8s.io/client-go.
 
 ## Where does it come from?
 
-`sample-controller` is synced from
-https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/sample-controller.
+`ladon-controller` is synced from
+https://github.com/kubernetes/kubernetes/blob/master/staging/src/github.com/kminehart/ladon-resource-manager.
 Code changes are made in that location, merged into k8s.io/kubernetes and
 later synced here.

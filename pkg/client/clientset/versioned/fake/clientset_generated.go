@@ -24,9 +24,9 @@ import (
 	"k8s.io/client-go/discovery"
 	fakediscovery "k8s.io/client-go/discovery/fake"
 	"k8s.io/client-go/testing"
-	clientset "k8s.io/sample-controller/pkg/client/clientset/versioned"
-	samplecontrollerv1alpha1 "k8s.io/sample-controller/pkg/client/clientset/versioned/typed/samplecontroller/v1alpha1"
-	fakesamplecontrollerv1alpha1 "k8s.io/sample-controller/pkg/client/clientset/versioned/typed/samplecontroller/v1alpha1/fake"
+	clientset "github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned"
+	ladoncontrollerv1alpha1 "github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned/typed/ladoncontroller/v1alpha1"
+	fakeladoncontrollerv1alpha1 "github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned/typed/ladoncontroller/v1alpha1/fake"
 )
 
 // NewSimpleClientset returns a clientset that will respond with the provided objects.
@@ -71,11 +71,11 @@ func (c *Clientset) Discovery() discovery.DiscoveryInterface {
 var _ clientset.Interface = &Clientset{}
 
 // SamplecontrollerV1alpha1 retrieves the SamplecontrollerV1alpha1Client
-func (c *Clientset) SamplecontrollerV1alpha1() samplecontrollerv1alpha1.SamplecontrollerV1alpha1Interface {
-	return &fakesamplecontrollerv1alpha1.FakeSamplecontrollerV1alpha1{Fake: &c.Fake}
+func (c *Clientset) SamplecontrollerV1alpha1() ladoncontrollerv1alpha1.SamplecontrollerV1alpha1Interface {
+	return &fakeladoncontrollerv1alpha1.FakeSamplecontrollerV1alpha1{Fake: &c.Fake}
 }
 
 // Samplecontroller retrieves the SamplecontrollerV1alpha1Client
-func (c *Clientset) Samplecontroller() samplecontrollerv1alpha1.SamplecontrollerV1alpha1Interface {
-	return &fakesamplecontrollerv1alpha1.FakeSamplecontrollerV1alpha1{Fake: &c.Fake}
+func (c *Clientset) Samplecontroller() ladoncontrollerv1alpha1.SamplecontrollerV1alpha1Interface {
+	return &fakeladoncontrollerv1alpha1.FakeSamplecontrollerV1alpha1{Fake: &c.Fake}
 }

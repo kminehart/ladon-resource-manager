@@ -7,7 +7,7 @@ go_library(
         "doc.go",
         "register.go",
     ],
-    importpath = "k8s.io/sample-controller/pkg/client/clientset/versioned/fake",
+    importpath = "github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned/fake",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
@@ -18,10 +18,10 @@ go_library(
         "//vendor/k8s.io/client-go/discovery:go_default_library",
         "//vendor/k8s.io/client-go/discovery/fake:go_default_library",
         "//vendor/k8s.io/client-go/testing:go_default_library",
-        "//vendor/k8s.io/sample-controller/pkg/apis/samplecontroller/v1alpha1:go_default_library",
-        "//vendor/k8s.io/sample-controller/pkg/client/clientset/versioned:go_default_library",
-        "//vendor/k8s.io/sample-controller/pkg/client/clientset/versioned/typed/samplecontroller/v1alpha1:go_default_library",
-        "//vendor/k8s.io/sample-controller/pkg/client/clientset/versioned/typed/samplecontroller/v1alpha1/fake:go_default_library",
+        "//vendor/github.com/kminehart/ladon-resource-manager/pkg/apis/ladoncontroller/v1alpha1:go_default_library",
+        "//vendor/github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned:go_default_library",
+        "//vendor/github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned/typed/ladoncontroller/v1alpha1:go_default_library",
+        "//vendor/github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned/typed/ladoncontroller/v1alpha1/fake:go_default_library",
     ],
 )
 

@@ -27,9 +27,9 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
-	versioned "k8s.io/sample-controller/pkg/client/clientset/versioned"
-	internalinterfaces "k8s.io/sample-controller/pkg/client/informers/externalversions/internalinterfaces"
-	samplecontroller "k8s.io/sample-controller/pkg/client/informers/externalversions/samplecontroller"
+	versioned "github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned"
+	internalinterfaces "github.com/kminehart/ladon-resource-manager/pkg/client/informers/externalversions/internalinterfaces"
+	ladoncontroller "github.com/kminehart/ladon-resource-manager/pkg/client/informers/externalversions/ladoncontroller"
 )
 
 type sharedInformerFactory struct {
@@ -123,9 +123,9 @@ type SharedInformerFactory interface {
 	ForResource(resource schema.GroupVersionResource) (GenericInformer, error)
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
-	Samplecontroller() samplecontroller.Interface
+	Samplecontroller() ladoncontroller.Interface
 }
 
-func (f *sharedInformerFactory) Samplecontroller() samplecontroller.Interface {
-	return samplecontroller.New(f, f.namespace, f.tweakListOptions)
+func (f *sharedInformerFactory) Samplecontroller() ladoncontroller.Interface {
+	return ladoncontroller.New(f, f.namespace, f.tweakListOptions)
 }

@@ -37,14 +37,14 @@ import (
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
 
-	samplev1alpha1 "k8s.io/sample-controller/pkg/apis/samplecontroller/v1alpha1"
-	clientset "k8s.io/sample-controller/pkg/client/clientset/versioned"
-	samplescheme "k8s.io/sample-controller/pkg/client/clientset/versioned/scheme"
-	informers "k8s.io/sample-controller/pkg/client/informers/externalversions"
-	listers "k8s.io/sample-controller/pkg/client/listers/samplecontroller/v1alpha1"
+	samplev1alpha1 "github.com/kminehart/ladon-resource-manager/pkg/apis/ladoncontroller/v1alpha1"
+	clientset "github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned"
+	samplescheme "github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned/scheme"
+	informers "github.com/kminehart/ladon-resource-manager/pkg/client/informers/externalversions"
+	listers "github.com/kminehart/ladon-resource-manager/pkg/client/listers/ladoncontroller/v1alpha1"
 )
 
-const controllerAgentName = "sample-controller"
+const controllerAgentName = "ladon-controller"
 
 const (
 	// SuccessSynced is used as part of the Event 'reason' when a Foo is synced
@@ -97,8 +97,8 @@ func NewController(
 	fooInformer := sampleInformerFactory.Samplecontroller().V1alpha1().Foos()
 
 	// Create event broadcaster
-	// Add sample-controller types to the default Kubernetes Scheme so Events can be
-	// logged for sample-controller types.
+	// Add ladon-controller types to the default Kubernetes Scheme so Events can be
+	// logged for ladon-controller types.
 	samplescheme.AddToScheme(scheme.Scheme)
 	glog.V(4).Info("Creating event broadcaster")
 	eventBroadcaster := record.NewBroadcaster()

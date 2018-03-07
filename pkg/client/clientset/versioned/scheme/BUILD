@@ -6,14 +6,14 @@ go_library(
         "doc.go",
         "register.go",
     ],
-    importpath = "k8s.io/sample-controller/pkg/client/clientset/versioned/scheme",
+    importpath = "github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned/scheme",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/serializer:go_default_library",
-        "//vendor/k8s.io/sample-controller/pkg/apis/samplecontroller/v1alpha1:go_default_library",
+        "//vendor/github.com/kminehart/ladon-resource-manager/pkg/apis/ladoncontroller/v1alpha1:go_default_library",
     ],
 )
 
