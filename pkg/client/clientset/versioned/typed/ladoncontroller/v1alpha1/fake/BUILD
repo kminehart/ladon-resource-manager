@@ -4,7 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "doc.go",
-        "fake_foo.go",
+        "fake_policy.go",
         "fake_ladoncontroller_client.go",
     ],
     importpath = "github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned/typed/ladoncontroller/v1alpha1/fake",

@@ -19,14 +19,14 @@ limitations under the License.
 package fake
 
 import (
+	clientset "github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned"
+	ladoncontrollerv1alpha1 "github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned/typed/ladoncontroller/v1alpha1"
+	fakeladoncontrollerv1alpha1 "github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned/typed/ladoncontroller/v1alpha1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
 	fakediscovery "k8s.io/client-go/discovery/fake"
 	"k8s.io/client-go/testing"
-	clientset "github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned"
-	ladoncontrollerv1alpha1 "github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned/typed/ladoncontroller/v1alpha1"
-	fakeladoncontrollerv1alpha1 "github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned/typed/ladoncontroller/v1alpha1/fake"
 )
 
 // NewSimpleClientset returns a clientset that will respond with the provided objects.
@@ -70,12 +70,12 @@ func (c *Clientset) Discovery() discovery.DiscoveryInterface {
 
 var _ clientset.Interface = &Clientset{}
 
-// SamplecontrollerV1alpha1 retrieves the SamplecontrollerV1alpha1Client
-func (c *Clientset) SamplecontrollerV1alpha1() ladoncontrollerv1alpha1.SamplecontrollerV1alpha1Interface {
-	return &fakeladoncontrollerv1alpha1.FakeSamplecontrollerV1alpha1{Fake: &c.Fake}
+// LadoncontrollerV1alpha1 retrieves the LadoncontrollerV1alpha1Client
+func (c *Clientset) LadoncontrollerV1alpha1() ladoncontrollerv1alpha1.LadoncontrollerV1alpha1Interface {
+	return &fakeladoncontrollerv1alpha1.FakeLadoncontrollerV1alpha1{Fake: &c.Fake}
 }
 
-// Samplecontroller retrieves the SamplecontrollerV1alpha1Client
-func (c *Clientset) Samplecontroller() ladoncontrollerv1alpha1.SamplecontrollerV1alpha1Interface {
-	return &fakeladoncontrollerv1alpha1.FakeSamplecontrollerV1alpha1{Fake: &c.Fake}
+// Ladoncontroller retrieves the LadoncontrollerV1alpha1Client
+func (c *Clientset) Ladoncontroller() ladoncontrollerv1alpha1.LadoncontrollerV1alpha1Interface {
+	return &fakeladoncontrollerv1alpha1.FakeLadoncontrollerV1alpha1{Fake: &c.Fake}
 }

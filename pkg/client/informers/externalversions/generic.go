@@ -21,9 +21,9 @@ package externalversions
 import (
 	"fmt"
 
+	v1alpha1 "github.com/kminehart/ladon-resource-manager/pkg/apis/ladoncontroller/v1alpha1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
-	v1alpha1 "github.com/kminehart/ladon-resource-manager/pkg/apis/ladoncontroller/v1alpha1"
 )
 
 // GenericInformer is type of SharedIndexInformer which will locate and delegate to other
@@ -53,8 +53,8 @@ func (f *genericInformer) Lister() cache.GenericLister {
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
 	// Group=ladoncontroller.k8s.io, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithResource("foos"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Samplecontroller().V1alpha1().Foos().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("policies"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Ladoncontroller().V1alpha1().Policies().Informer()}, nil
 
 	}
 

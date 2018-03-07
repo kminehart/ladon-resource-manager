@@ -4,7 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "doc.go",
-        "foo.go",
+        "policy.go",
         "generated_expansion.go",
         "ladoncontroller_client.go",
     ],

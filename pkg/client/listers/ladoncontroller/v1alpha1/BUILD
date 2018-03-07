@@ -4,7 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "expansion_generated.go",
-        "foo.go",
+        "policy.go",
     ],
     importpath = "github.com/kminehart/ladon-resource-manager/pkg/client/listers/ladoncontroller/v1alpha1",
     visibility = ["//visibility:public"],

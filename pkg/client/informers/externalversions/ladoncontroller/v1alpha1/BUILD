@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "foo.go",
+        "policy.go",
         "interface.go",
     ],
     importpath = "github.com/kminehart/ladon-resource-manager/pkg/client/informers/externalversions/ladoncontroller/v1alpha1",

@@ -20,34 +20,34 @@ package versioned
 
 import (
 	glog "github.com/golang/glog"
+	ladoncontrollerv1alpha1 "github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned/typed/ladoncontroller/v1alpha1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
-	ladoncontrollerv1alpha1 "github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned/typed/ladoncontroller/v1alpha1"
 )
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
-	SamplecontrollerV1alpha1() ladoncontrollerv1alpha1.SamplecontrollerV1alpha1Interface
+	LadoncontrollerV1alpha1() ladoncontrollerv1alpha1.LadoncontrollerV1alpha1Interface
 	// Deprecated: please explicitly pick a version if possible.
-	Samplecontroller() ladoncontrollerv1alpha1.SamplecontrollerV1alpha1Interface
+	Ladoncontroller() ladoncontrollerv1alpha1.LadoncontrollerV1alpha1Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
 // version included in a Clientset.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	ladoncontrollerV1alpha1 *ladoncontrollerv1alpha1.SamplecontrollerV1alpha1Client
+	ladoncontrollerV1alpha1 *ladoncontrollerv1alpha1.LadoncontrollerV1alpha1Client
 }
 
-// SamplecontrollerV1alpha1 retrieves the SamplecontrollerV1alpha1Client
-func (c *Clientset) SamplecontrollerV1alpha1() ladoncontrollerv1alpha1.SamplecontrollerV1alpha1Interface {
+// LadoncontrollerV1alpha1 retrieves the LadoncontrollerV1alpha1Client
+func (c *Clientset) LadoncontrollerV1alpha1() ladoncontrollerv1alpha1.LadoncontrollerV1alpha1Interface {
 	return c.ladoncontrollerV1alpha1
 }
 
-// Deprecated: Samplecontroller retrieves the default version of SamplecontrollerClient.
+// Deprecated: Ladoncontroller retrieves the default version of LadoncontrollerClient.
 // Please explicitly pick a version.
-func (c *Clientset) Samplecontroller() ladoncontrollerv1alpha1.SamplecontrollerV1alpha1Interface {
+func (c *Clientset) Ladoncontroller() ladoncontrollerv1alpha1.LadoncontrollerV1alpha1Interface {
 	return c.ladoncontrollerV1alpha1
 }
 

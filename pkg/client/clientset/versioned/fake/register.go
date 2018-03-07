@@ -19,11 +19,11 @@ limitations under the License.
 package fake
 
 import (
+	ladoncontrollerv1alpha1 "github.com/kminehart/ladon-resource-manager/pkg/apis/ladoncontroller/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
-	ladoncontrollerv1alpha1 "github.com/kminehart/ladon-resource-manager/pkg/apis/ladoncontroller/v1alpha1"
 )
 
 var scheme = runtime.NewScheme()

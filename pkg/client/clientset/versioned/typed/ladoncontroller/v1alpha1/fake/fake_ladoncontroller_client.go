@@ -19,22 +19,22 @@ limitations under the License.
 package fake
 
 import (
+	v1alpha1 "github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned/typed/ladoncontroller/v1alpha1"
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
-	v1alpha1 "github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned/typed/ladoncontroller/v1alpha1"
 )
 
-type FakeSamplecontrollerV1alpha1 struct {
+type FakeLadoncontrollerV1alpha1 struct {
 	*testing.Fake
 }
 
-func (c *FakeSamplecontrollerV1alpha1) Foos(namespace string) v1alpha1.FooInterface {
-	return &FakeFoos{c, namespace}
+func (c *FakeLadoncontrollerV1alpha1) Policies(namespace string) v1alpha1.PolicyInterface {
+	return &FakePolicies{c, namespace}
 }
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *FakeSamplecontrollerV1alpha1) RESTClient() rest.Interface {
+func (c *FakeLadoncontrollerV1alpha1) RESTClient() rest.Interface {
 	var ret *rest.RESTClient
 	return ret
 }
