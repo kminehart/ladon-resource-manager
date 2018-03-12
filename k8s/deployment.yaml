@@ -1,0 +1,22 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: ladon-resoure-manager
+  labels:
+    app: ladon-resource-mangaer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ladon-resource-manager
+  template:
+    metadata:
+      labels:
+        app: ladon-resource-manager
+    spec:
+      env:
+      - name: POSTGRES_URL
+        value: "postgres://postgres@postgres.default.svc.cluster.local/ladon"
+      containers:
+      - name: manager
+        image: kminehart/ladon-resource-manager:v1.0.0

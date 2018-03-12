@@ -18,14 +18,20 @@ package main
 
 import (
 	"flag"
+	"os"
 	"time"
 
-	"github.com/golang/glog"
 	kubeinformers "k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
-	// Uncomment the following line to load the gcp plugin (only required to authenticate against GKE clusters).
-	// _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	// _ "k8s.io/code-generator/cmd/codegen"
+
+	"github.com/golang/glog"
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
+	"github.com/ory/ladon"
+	manager "github.com/ory/ladon/manager/sql"
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 
 	clientset "github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned"
 	informers "github.com/kminehart/ladon-resource-manager/pkg/client/informers/externalversions"
@@ -33,12 +39,33 @@ import (
 )
 
 var (
-	masterURL  string
-	kubeconfig string
+	postgresURL string
+	masterURL   string
+	kubeconfig  string
 )
 
 func main() {
 	flag.Parse()
+	if postgresURL == "" {
+		postgresURL = os.Getenv("POSTGRES_URL")
+	}
+	// Connect to the SQL server to create policies...
+	ladonDB, err := sqlx.Open("postgres", postgresURL)
+	if err != nil {
+		glog.Fatal(err.Error())
+	}
+	defer ladonDB.Close()
+
+	sqlManager := manager.NewSQLManager(ladonDB, nil)
+
+	warden := &ladon.Ladon{
+		Manager: sqlManager,
+	}
+
+	// TODO: re-enable when this has crdb support
+	// if _, err := sqlManager.CreateSchemas("ladon", "ladon_migrations"); err != nil {
+	// 	glog.Fatal(err.Error())
+	// }
 
 	// set up signals so we handle the first shutdown signal gracefully
 	stopCh := signals.SetupSignalHandler()
@@ -53,18 +80,19 @@ func main() {
 		glog.Fatalf("Error building kubernetes clientset: %s", err.Error())
 	}
 
-	exampleClient, err := clientset.NewForConfig(cfg)
+	ladonClient, err := clientset.NewForConfig(cfg)
 	if err != nil {
-		glog.Fatalf("Error building example clientset: %s", err.Error())
+		glog.Fatalf("Error building ladon manager clientset: %s", err.Error())
 	}
 
-	kubeInformerFactory := kubeinformers.NewSharedInformerFactory(kubeClient, time.Second*30)
-	exampleInformerFactory := informers.NewSharedInformerFactory(exampleClient, time.Second*30)
-
-	controller := NewController(kubeClient, exampleClient, kubeInformerFactory, exampleInformerFactory)
+	var (
+		kubeInformerFactory  = kubeinformers.NewSharedInformerFactory(kubeClient, time.Second*30)
+		ladonInformerFactory = informers.NewSharedInformerFactory(ladonClient, time.Second*30)
+		controller           = NewController(kubeClient, ladonClient, kubeInformerFactory, ladonInformerFactory, warden)
+	)
 
 	go kubeInformerFactory.Start(stopCh)
-	go exampleInformerFactory.Start(stopCh)
+	go ladonInformerFactory.Start(stopCh)
 
 	if err = controller.Run(2, stopCh); err != nil {
 		glog.Fatalf("Error running controller: %s", err.Error())
@@ -74,4 +102,5 @@ func main() {
 func init() {
 	flag.StringVar(&kubeconfig, "kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
 	flag.StringVar(&masterURL, "master", "", "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
+	flag.StringVar(&postgresURL, "postgres-url", "", "The URL of the postgres server.")
 }

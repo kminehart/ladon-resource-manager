@@ -35,13 +35,15 @@ type Policy struct {
 
 // PolicySpec is the spec for a Policy resource
 type PolicySpec struct {
-	DeploymentName string `json:"deploymentName"`
-	Replicas       *int32 `json:"replicas"`
+	Description string   `json:"description"`
+	Subjects    []string `json:"subjects"`
+	Actions     []string `json:"actions"`
+	Resources   []string `json:"resources"`
+	Effect      string   `json:"effect"`
 }
 
 // PolicyStatus is the status for a Policy resource
 type PolicyStatus struct {
-	AvailableReplicas int32 `json:"availableReplicas"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
