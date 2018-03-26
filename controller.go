@@ -339,6 +339,7 @@ func (c *Controller) updatePolicy(policy *ladonv1alpha1.Policy) error {
 }
 
 func (c *Controller) deletePolicy(key string) error {
+	glog.Infof("Deleting policy %s", key)
 	policyID, err := getPolicyIDFromKey(key)
 	if err != nil {
 		return err
