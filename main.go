@@ -29,7 +29,6 @@ import (
 	"github.com/golang/glog"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/ory/ladon"
 	manager "github.com/ory/ladon/manager/sql"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 
@@ -58,14 +57,9 @@ func main() {
 
 	sqlManager := manager.NewSQLManager(ladonDB, nil)
 
-	warden := &ladon.Ladon{
-		Manager: sqlManager,
+	if _, err := sqlManager.CreateSchemas("ladon", "ladon_migrations"); err != nil {
+		glog.Fatal(err.Error())
 	}
-
-	// TODO: re-enable when this has crdb support
-	// if _, err := sqlManager.CreateSchemas("ladon", "ladon_migrations"); err != nil {
-	// 	glog.Fatal(err.Error())
-	// }
 
 	// set up signals so we handle the first shutdown signal gracefully
 	stopCh := signals.SetupSignalHandler()
@@ -88,7 +82,7 @@ func main() {
 	var (
 		kubeInformerFactory  = kubeinformers.NewSharedInformerFactory(kubeClient, time.Second*30)
 		ladonInformerFactory = informers.NewSharedInformerFactory(ladonClient, time.Second*30)
-		controller           = NewController(kubeClient, ladonClient, kubeInformerFactory, ladonInformerFactory, warden)
+		controller           = NewController(kubeClient, ladonClient, kubeInformerFactory, ladonInformerFactory, sqlManager)
 	)
 
 	go kubeInformerFactory.Start(stopCh)

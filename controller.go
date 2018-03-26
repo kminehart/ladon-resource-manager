@@ -44,6 +44,10 @@ import (
 const controllerAgentName = "ladon-controller"
 
 const (
+	actionAdd    = "create"
+	actionUpdate = "update"
+	actionDelete = "delete"
+
 	// SuccessSynced is used as part of the Event 'reason' when a Policy is synced
 	SuccessSynced = "Synced"
 
@@ -51,6 +55,11 @@ const (
 	// is synced successfully
 	MessageResourceSynced = "Policy synced successfully"
 )
+
+type queueItem struct {
+	action string
+	policy *ladonv1alpha1.Policy
+}
 
 // Controller is the controller implementation for Policy resources
 type Controller struct {
@@ -73,9 +82,22 @@ type Controller struct {
 	// Kubernetes API.
 	recorder record.EventRecorder
 
-	// warden is responsible for creating, updating, and deleting
+	// manager is responsible for creating, updating, and deleting
 	// ladon polices.
-	warden ladon.Warden
+	manager ladon.Manager
+}
+
+func getPolicyID(policy *ladonv1alpha1.Policy) string {
+	return fmt.Sprintf("%s-%s", policy.GetNamespace(), policy.GetName())
+}
+
+func getPolicyIDFromKey(key string) (string, error) {
+	// Convert the namespace/name string into a distinct namespace and name
+	namespace, name, err := cache.SplitMetaNamespaceKey(key)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%s-%s", namespace, name), nil
 }
 
 // NewController returns a new ladon controller
@@ -84,7 +106,7 @@ func NewController(
 	ladonclientset clientset.Interface,
 	kubeInformerFactory kubeinformers.SharedInformerFactory,
 	ladonInformerFactory informers.SharedInformerFactory,
-	warden ladon.Warden) *Controller {
+	manager ladon.Manager) *Controller {
 
 	// obtain references to shared index informers for the Deployment and Policy
 	// types.
@@ -107,15 +129,31 @@ func NewController(
 		policiesSynced: policyInformer.Informer().HasSynced,
 		workqueue:      workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "policies"),
 		recorder:       recorder,
-		warden:         warden,
+		manager:        manager,
 	}
 
 	glog.Info("Setting up event handlers")
 	// Set up an event handler for when Policy resources change
 	policyInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc: controller.enqueuePolicy,
+		AddFunc: func(obj interface{}) {
+			key, err := cache.MetaNamespaceKeyFunc(obj)
+			if err == nil {
+				controller.workqueue.Add(key)
+			}
+		},
 		UpdateFunc: func(old, new interface{}) {
-			controller.enqueuePolicy(new)
+			key, err := cache.MetaNamespaceKeyFunc(new)
+			if err == nil {
+				controller.workqueue.Add(key)
+			}
+		},
+		DeleteFunc: func(obj interface{}) {
+			// IndexerInformer uses a delta nodeQueue, therefore for deletes we have to use this
+			// key function.
+			key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
+			if err == nil {
+				controller.workqueue.Add(key)
+			}
 		},
 	})
 
@@ -163,7 +201,7 @@ func (c *Controller) runWorker() {
 // processNextWorkItem will read a single work item off the workqueue and
 // attempt to process it, by calling the syncHandler.
 func (c *Controller) processNextWorkItem() bool {
-	obj, shutdown := c.workqueue.Get()
+	key, shutdown := c.workqueue.Get()
 
 	if shutdown {
 		return false
@@ -193,17 +231,19 @@ func (c *Controller) processNextWorkItem() bool {
 			runtime.HandleError(fmt.Errorf("expected string in workqueue but got %#v", obj))
 			return nil
 		}
+
 		// Run the syncHandler, passing it the namespace/name string of the
 		// Policy resource to be synced.
 		if err := c.syncHandler(key); err != nil {
-			return fmt.Errorf("error syncing '%s': %s", key, err.Error())
+			return fmt.Errorf("error syncing policy '%s': %s", key, err.Error())
 		}
+
 		// Finally, if no error occurs we Forget this item so it does not
 		// get queued again until another change happens.
 		c.workqueue.Forget(obj)
 		glog.Infof("Successfully synced '%s'", key)
 		return nil
-	}(obj)
+	}(key)
 
 	if err != nil {
 		runtime.HandleError(err)
@@ -220,28 +260,33 @@ func (c *Controller) syncHandler(key string) error {
 	// Convert the namespace/name string into a distinct namespace and name
 	namespace, name, err := cache.SplitMetaNamespaceKey(key)
 	if err != nil {
-		runtime.HandleError(fmt.Errorf("invalid resource key: %s", key))
-		return nil
+		return err
 	}
 
 	// Get the Policy resource with this namespace/name
 	policy, err := c.policiesLister.Policies(namespace).Get(name)
+
 	if err != nil {
 		// The Policy resource may no longer exist, in which case we stop
 		// processing.
 		if errors.IsNotFound(err) {
-			runtime.HandleError(fmt.Errorf("policy '%s' in work queue no longer exists", key))
-			return nil
+			runtime.HandleError(fmt.Errorf("policy '%s' in work queue no longer exists. Deleting...", key))
+			return c.deletePolicy(key)
 		}
 
 		return err
 	}
+
 	glog.V(4).Infof("Handling policy %+v", policy)
+
+	if err := c.addPolicy(policy); err != nil {
+		c.updatePolicy(policy)
+	}
 
 	// -- This, and updatepoliciestatus, may be completely useless
 	// Finally, we update the status block of the Policy resource to reflect the
 	// current state of the world
-	err = c.updatepoliciestatus(policy)
+	err = c.updatepolicystatus(policy)
 	if err != nil {
 		return err
 	}
@@ -249,7 +294,7 @@ func (c *Controller) syncHandler(key string) error {
 	return nil
 }
 
-func (c *Controller) updatepoliciestatus(policy *ladonv1alpha1.Policy) error {
+func (c *Controller) updatepolicystatus(policy *ladonv1alpha1.Policy) error {
 	// NEVER modify objects from the store. It's a read-only, local cache.
 	// You can use DeepCopy() to make a deep copy of original object and modify this copy
 	// Or create a copy manually for better performance
@@ -268,11 +313,35 @@ func (c *Controller) updatepoliciestatus(policy *ladonv1alpha1.Policy) error {
 // string which is then put onto the work queue. This method should *not* be
 // passed resources of any type other than Policy.
 func (c *Controller) enqueuePolicy(obj interface{}) {
-	var key string
-	var err error
-	if key, err = cache.MetaNamespaceKeyFunc(obj); err != nil {
-		runtime.HandleError(err)
-		return
+	c.workqueue.AddRateLimited(obj)
+}
+
+func (c *Controller) addPolicy(policy *ladonv1alpha1.Policy) error {
+	return c.manager.Create(&ladon.DefaultPolicy{
+		ID:          getPolicyID(policy),
+		Description: policy.Spec.Description,
+		Subjects:    policy.Spec.Subjects,
+		Actions:     policy.Spec.Actions,
+		Resources:   policy.Spec.Resources,
+		Effect:      policy.Spec.Effect,
+	})
+}
+
+func (c *Controller) updatePolicy(policy *ladonv1alpha1.Policy) error {
+	return c.manager.Update(&ladon.DefaultPolicy{
+		ID:          getPolicyID(policy),
+		Description: policy.Spec.Description,
+		Subjects:    policy.Spec.Subjects,
+		Actions:     policy.Spec.Actions,
+		Resources:   policy.Spec.Resources,
+		Effect:      policy.Spec.Effect,
+	})
+}
+
+func (c *Controller) deletePolicy(key string) error {
+	policyID, err := getPolicyIDFromKey(key)
+	if err != nil {
+		return err
 	}
-	c.workqueue.AddRateLimited(key)
+	return c.manager.Delete(policyID)
 }

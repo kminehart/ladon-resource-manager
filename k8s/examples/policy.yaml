@@ -1,0 +1,33 @@
+apiVersion: ladoncontroller.k8s.io/v1alpha1
+kind: Policy
+metadata:
+  name: consent-policy-users
+spec:
+  description: "Allow Consent app to read user information."
+  subjects:
+  - "services:consent"
+  - "groups:app-internal"
+  actions:
+  - "read"
+  resources:
+  - "users:<.*>"
+  effect: "allow"
+---
+apiVersion: ladoncontroller.k8s.io/v1alpha1
+kind: Policy
+metadata:
+  name: consent-policy-sesions
+spec:
+  description: "Allow Consent app to read & write session information."
+  subjects:
+  - "services:consent"
+  - "groups:app-internal"
+  actions:
+  - "create"
+  - "read"
+  - "update"
+  - "delete"
+  resources:
+  - "sessions:<.*>"
+  effect: "allow"
+

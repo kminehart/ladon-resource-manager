@@ -14,9 +14,13 @@ spec:
       labels:
         app: ladon-resource-manager
     spec:
-      env:
-      - name: POSTGRES_URL
-        value: "postgres://postgres@postgres.default.svc.cluster.local/ladon"
       containers:
       - name: manager
         image: kminehart/ladon-resource-manager:v1.0.0
+        env:
+        - name: POSTGRES_URL
+          value: "postgres://postgres@postgres.default.svc.cluster.local/ladon"
+        command:
+        - "/ladon-resource-manager"
+        - "-v=4"
+        - "-logtostderr=true"
