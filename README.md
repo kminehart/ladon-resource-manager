@@ -27,3 +27,26 @@ kubectl apply -f k8s/crd.yaml -f k8s/deployment.yaml
 An example `Policy` resource is provided at `k8s/examples/policy.yaml`.
 
 Creating `Policy` resources will create `Policy` entries in your `ladon` database.
+
+```
+kubectl apply -f k8s/examples/policy.yaml
+```
+
+Example:
+
+```yaml
+apiVersion: ladoncontroller.k8s.io/v1alpha1
+kind: Policy
+metadata:
+  name: consent-policy-users
+spec:
+  description: "Allow Consent app to read user information."
+  subjects:
+  - "services:consent"
+  - "groups:app-internal"
+  actions:
+  - "read"
+  resources:
+  - "users:<.*>"
+  effect: "allow"
+```
