@@ -20,6 +20,8 @@ Once you're done, run:
 kubectl apply -f k8s/crd.yaml -f k8s/deployment.yaml
 ```
 
+**This will run the migrations for the Ladon database. If you do not have tables built for ladon, this applicaiton will do it as soon as it starts.**
+
 # Usage
 
 An example `Policy` resource is provided at `k8s/examples/policy.yaml`.
