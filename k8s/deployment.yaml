@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: manager
-        image: kminehart/ladon-resource-manager:v1.0.0
+        image: kminehart/ladon-resource-manager:v0.1.0
         env:
         - name: POSTGRES_URL
           value: "postgres://postgres@postgres.default.svc.cluster.local/ladon"
