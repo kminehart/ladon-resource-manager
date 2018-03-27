@@ -279,7 +279,9 @@ func (c *Controller) syncHandler(key string) error {
 
 	glog.V(4).Infof("Handling policy %+v", policy)
 
-	if err := c.addPolicy(policy); err != nil {
+	if _, err := c.manager.Get(getPolicyID(policy)); err != nil {
+		c.addPolicy(policy)
+	} else {
 		c.updatePolicy(policy)
 	}
 
@@ -317,6 +319,7 @@ func (c *Controller) enqueuePolicy(obj interface{}) {
 }
 
 func (c *Controller) addPolicy(policy *ladonv1alpha1.Policy) error {
+	glog.Infof("Creating new policy %+v", policy)
 	return c.manager.Create(&ladon.DefaultPolicy{
 		ID:          getPolicyID(policy),
 		Description: policy.Spec.Description,
@@ -328,6 +331,7 @@ func (c *Controller) addPolicy(policy *ladonv1alpha1.Policy) error {
 }
 
 func (c *Controller) updatePolicy(policy *ladonv1alpha1.Policy) error {
+	glog.Infof("Updating existing policy %+v", policy)
 	return c.manager.Update(&ladon.DefaultPolicy{
 		ID:          getPolicyID(policy),
 		Description: policy.Spec.Description,
