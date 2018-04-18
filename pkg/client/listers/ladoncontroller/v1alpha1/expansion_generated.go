@@ -18,10 +18,10 @@ limitations under the License.
 
 package v1alpha1
 
-// PolicyListerExpansion allows custom methods to be added to
-// PolicyLister.
-type PolicyListerExpansion interface{}
+// LadonPolicyListerExpansion allows custom methods to be added to
+// LadonPolicyLister.
+type LadonPolicyListerExpansion interface{}
 
-// PolicyNamespaceListerExpansion allows custom methods to be added to
-// PolicyNamespaceLister.
-type PolicyNamespaceListerExpansion interface{}
+// LadonPolicyNamespaceListerExpansion allows custom methods to be added to
+// LadonPolicyNamespaceLister.
+type LadonPolicyNamespaceListerExpansion interface{}

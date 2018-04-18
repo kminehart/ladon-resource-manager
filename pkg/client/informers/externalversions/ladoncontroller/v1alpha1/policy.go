@@ -31,11 +31,11 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// PolicyInformer provides access to a shared informer and lister for
+// LadonPolicyInformer provides access to a shared informer and lister for
 // Policies.
-type PolicyInformer interface {
+type LadonPolicyInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.PolicyLister
+	Lister() v1alpha1.LadonPolicyLister
 }
 
 type policyInformer struct {
@@ -44,17 +44,17 @@ type policyInformer struct {
 	namespace        string
 }
 
-// NewPolicyInformer constructs a new informer for Policy type.
+// NewLadonPolicyInformer constructs a new informer for LadonPolicy type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewPolicyInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredPolicyInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewLadonPolicyInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredLadonPolicyInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredPolicyInformer constructs a new informer for Policy type.
+// NewFilteredLadonPolicyInformer constructs a new informer for LadonPolicy type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredPolicyInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredLadonPolicyInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
@@ -70,20 +70,20 @@ func NewFilteredPolicyInformer(client versioned.Interface, namespace string, res
 				return client.LadoncontrollerV1alpha1().Policies(namespace).Watch(options)
 			},
 		},
-		&ladoncontroller_v1alpha1.Policy{},
+		&ladoncontroller_v1alpha1.LadonPolicy{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
 func (f *policyInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredPolicyInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+	return NewFilteredLadonPolicyInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
 func (f *policyInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&ladoncontroller_v1alpha1.Policy{}, f.defaultInformer)
+	return f.factory.InformerFor(&ladoncontroller_v1alpha1.LadonPolicy{}, f.defaultInformer)
 }
 
-func (f *policyInformer) Lister() v1alpha1.PolicyLister {
-	return v1alpha1.NewPolicyLister(f.Informer().GetIndexer())
+func (f *policyInformer) Lister() v1alpha1.LadonPolicyLister {
+	return v1alpha1.NewLadonPolicyLister(f.Informer().GetIndexer())
 }

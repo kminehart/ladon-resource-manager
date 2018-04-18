@@ -48,20 +48,20 @@ const (
 	actionUpdate = "update"
 	actionDelete = "delete"
 
-	// SuccessSynced is used as part of the Event 'reason' when a Policy is synced
+	// SuccessSynced is used as part of the Event 'reason' when a LadonPolicy is synced
 	SuccessSynced = "Synced"
 
-	// MessageResourceSynced is the message used for an Event fired when a Policy
+	// MessageResourceSynced is the message used for an Event fired when a LadonPolicy
 	// is synced successfully
-	MessageResourceSynced = "Policy synced successfully"
+	MessageResourceSynced = "LadonPolicy synced successfully"
 )
 
 type queueItem struct {
 	action string
-	policy *ladonv1alpha1.Policy
+	policy *ladonv1alpha1.LadonPolicy
 }
 
-// Controller is the controller implementation for Policy resources
+// Controller is the controller implementation for LadonPolicy resources
 type Controller struct {
 	// kubeclientset is a standard kubernetes clientset
 	kubeclientset kubernetes.Interface
@@ -69,7 +69,7 @@ type Controller struct {
 	// ladonclientset is a clientset for our own API group
 	ladonclientset clientset.Interface
 
-	policiesLister listers.PolicyLister
+	policiesLister listers.LadonPolicyLister
 	policiesSynced cache.InformerSynced
 
 	// workqueue is a rate limited work queue. This is used to queue work to be
@@ -87,11 +87,11 @@ type Controller struct {
 	manager ladon.Manager
 }
 
-func getPolicyID(policy *ladonv1alpha1.Policy) string {
+func getLadonPolicyID(policy *ladonv1alpha1.LadonPolicy) string {
 	return fmt.Sprintf("%s-%s", policy.GetNamespace(), policy.GetName())
 }
 
-func getPolicyIDFromKey(key string) (string, error) {
+func getLadonPolicyIDFromKey(key string) (string, error) {
 	// Convert the namespace/name string into a distinct namespace and name
 	namespace, name, err := cache.SplitMetaNamespaceKey(key)
 	if err != nil {
@@ -108,7 +108,7 @@ func NewController(
 	ladonInformerFactory informers.SharedInformerFactory,
 	manager ladon.Manager) *Controller {
 
-	// obtain references to shared index informers for the Deployment and Policy
+	// obtain references to shared index informers for the Deployment and LadonPolicy
 	// types.
 	policyInformer := ladonInformerFactory.Ladoncontroller().V1alpha1().Policies()
 
@@ -133,7 +133,7 @@ func NewController(
 	}
 
 	glog.Info("Setting up event handlers")
-	// Set up an event handler for when Policy resources change
+	// Set up an event handler for when LadonPolicy resources change
 	policyInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			key, err := cache.MetaNamespaceKeyFunc(obj)
@@ -169,7 +169,7 @@ func (c *Controller) Run(threadiness int, stopCh <-chan struct{}) error {
 	defer c.workqueue.ShutDown()
 
 	// Start the informer factories to begin populating the informer caches
-	glog.Info("Starting Policy controller")
+	glog.Info("Starting LadonPolicy controller")
 
 	// Wait for the caches to be synced before starting workers
 	glog.Info("Waiting for informer caches to sync")
@@ -178,7 +178,7 @@ func (c *Controller) Run(threadiness int, stopCh <-chan struct{}) error {
 	}
 
 	glog.Info("Starting workers")
-	// Launch two workers to process Policy resources
+	// Launch two workers to process LadonPolicy resources
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(c.runWorker, time.Second, stopCh)
 	}
@@ -233,7 +233,7 @@ func (c *Controller) processNextWorkItem() bool {
 		}
 
 		// Run the syncHandler, passing it the namespace/name string of the
-		// Policy resource to be synced.
+		// LadonPolicy resource to be synced.
 		if err := c.syncHandler(key); err != nil {
 			return fmt.Errorf("error syncing policy '%s': %s", key, err.Error())
 		}
@@ -254,7 +254,7 @@ func (c *Controller) processNextWorkItem() bool {
 }
 
 // syncHandler compares the actual state with the desired, and attempts to
-// converge the two. It then updates the Status block of the Policy resource
+// converge the two. It then updates the Status block of the LadonPolicy resource
 // with the current status of the resource.
 func (c *Controller) syncHandler(key string) error {
 	// Convert the namespace/name string into a distinct namespace and name
@@ -263,15 +263,15 @@ func (c *Controller) syncHandler(key string) error {
 		return err
 	}
 
-	// Get the Policy resource with this namespace/name
+	// Get the LadonPolicy resource with this namespace/name
 	policy, err := c.policiesLister.Policies(namespace).Get(name)
 
 	if err != nil {
-		// The Policy resource may no longer exist, in which case we stop
+		// The LadonPolicy resource may no longer exist, in which case we stop
 		// processing.
 		if errors.IsNotFound(err) {
 			runtime.HandleError(fmt.Errorf("policy '%s' in work queue no longer exists. Deleting...", key))
-			return c.deletePolicy(key)
+			return c.deleteLadonPolicy(key)
 		}
 
 		return err
@@ -279,14 +279,14 @@ func (c *Controller) syncHandler(key string) error {
 
 	glog.V(4).Infof("Handling policy %+v", policy)
 
-	if _, err := c.manager.Get(getPolicyID(policy)); err != nil {
-		c.addPolicy(policy)
+	if _, err := c.manager.Get(getLadonPolicyID(policy)); err != nil {
+		c.addLadonPolicy(policy)
 	} else {
-		c.updatePolicy(policy)
+		c.updateLadonPolicy(policy)
 	}
 
 	// -- This, and updatepoliciestatus, may be completely useless
-	// Finally, we update the status block of the Policy resource to reflect the
+	// Finally, we update the status block of the LadonPolicy resource to reflect the
 	// current state of the world
 	err = c.updatepolicystatus(policy)
 	if err != nil {
@@ -296,7 +296,7 @@ func (c *Controller) syncHandler(key string) error {
 	return nil
 }
 
-func (c *Controller) updatepolicystatus(policy *ladonv1alpha1.Policy) error {
+func (c *Controller) updatepolicystatus(policy *ladonv1alpha1.LadonPolicy) error {
 	// NEVER modify objects from the store. It's a read-only, local cache.
 	// You can use DeepCopy() to make a deep copy of original object and modify this copy
 	// Or create a copy manually for better performance
@@ -304,24 +304,24 @@ func (c *Controller) updatepolicystatus(policy *ladonv1alpha1.Policy) error {
 	// -- This line was removed as it is unlikely we'll be able to sync the status of a ladon resource
 	// policyCopy.Status.AvailableReplicas = deployment.Status.AvailableReplicas
 	// // Until #38113 is merged, we must use Update instead of UpdateStatus to
-	// // update the Status block of the Policy resource. UpdateStatus will not
+	// // update the Status block of the LadonPolicy resource. UpdateStatus will not
 	// // allow changes to the Spec of the resource, which is ideal for ensuring
 	// // nothing other than resource status has been updated.
 	_, err := c.ladonclientset.LadoncontrollerV1alpha1().Policies(policy.Namespace).Update(policyCopy)
 	return err
 }
 
-// enqueuePolicy takes a Policy resource and converts it into a namespace/name
+// enqueueLadonPolicy takes a LadonPolicy resource and converts it into a namespace/name
 // string which is then put onto the work queue. This method should *not* be
-// passed resources of any type other than Policy.
-func (c *Controller) enqueuePolicy(obj interface{}) {
+// passed resources of any type other than LadonPolicy.
+func (c *Controller) enqueueLadonPolicy(obj interface{}) {
 	c.workqueue.AddRateLimited(obj)
 }
 
-func (c *Controller) addPolicy(policy *ladonv1alpha1.Policy) error {
+func (c *Controller) addLadonPolicy(policy *ladonv1alpha1.LadonPolicy) error {
 	glog.Infof("Creating new policy %+v", policy)
 	return c.manager.Create(&ladon.DefaultPolicy{
-		ID:          getPolicyID(policy),
+		ID:          getLadonPolicyID(policy),
 		Description: policy.Spec.Description,
 		Subjects:    policy.Spec.Subjects,
 		Actions:     policy.Spec.Actions,
@@ -330,10 +330,10 @@ func (c *Controller) addPolicy(policy *ladonv1alpha1.Policy) error {
 	})
 }
 
-func (c *Controller) updatePolicy(policy *ladonv1alpha1.Policy) error {
+func (c *Controller) updateLadonPolicy(policy *ladonv1alpha1.LadonPolicy) error {
 	glog.Infof("Updating existing policy %+v", policy)
 	return c.manager.Update(&ladon.DefaultPolicy{
-		ID:          getPolicyID(policy),
+		ID:          getLadonPolicyID(policy),
 		Description: policy.Spec.Description,
 		Subjects:    policy.Spec.Subjects,
 		Actions:     policy.Spec.Actions,
@@ -342,9 +342,9 @@ func (c *Controller) updatePolicy(policy *ladonv1alpha1.Policy) error {
 	})
 }
 
-func (c *Controller) deletePolicy(key string) error {
+func (c *Controller) deleteLadonPolicy(key string) error {
 	glog.Infof("Deleting policy %s", key)
-	policyID, err := getPolicyIDFromKey(key)
+	policyID, err := getLadonPolicyIDFromKey(key)
 	if err != nil {
 		return err
 	}

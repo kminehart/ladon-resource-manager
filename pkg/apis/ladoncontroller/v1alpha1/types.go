@@ -24,17 +24,17 @@ import (
 // +genclient:noStatus
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// Policy is a specification for a Policy resource
-type Policy struct {
+// LadonPolicy is a specification for a LadonPolicy resource
+type LadonPolicy struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   PolicySpec   `json:"spec"`
-	Status PolicyStatus `json:"status"`
+	Spec   LadonPolicySpec   `json:"spec"`
+	Status LadonPolicyStatus `json:"status"`
 }
 
-// PolicySpec is the spec for a Policy resource
-type PolicySpec struct {
+// LadonPolicySpec is the spec for a LadonPolicy resource
+type LadonPolicySpec struct {
 	Description string   `json:"description"`
 	Subjects    []string `json:"subjects"`
 	Actions     []string `json:"actions"`
@@ -42,16 +42,16 @@ type PolicySpec struct {
 	Effect      string   `json:"effect"`
 }
 
-// PolicyStatus is the status for a Policy resource
-type PolicyStatus struct {
+// LadonPolicyStatus is the status for a LadonPolicy resource
+type LadonPolicyStatus struct {
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// PolicyList is a list of Policy resources
-type PolicyList struct {
+// LadonPolicyList is a list of LadonPolicy resources
+type LadonPolicyList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`
 
-	Items []Policy `json:"items"`
+	Items []LadonPolicy `json:"items"`
 }

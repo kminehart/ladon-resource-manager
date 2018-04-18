@@ -28,7 +28,7 @@ import (
 	testing "k8s.io/client-go/testing"
 )
 
-// FakePolicies implements PolicyInterface
+// FakePolicies implements LadonPolicyInterface
 type FakePolicies struct {
 	Fake *FakeLadoncontrollerV1alpha1
 	ns   string
@@ -36,23 +36,23 @@ type FakePolicies struct {
 
 var policiesResource = schema.GroupVersionResource{Group: "ladoncontroller.k8s.io", Version: "v1alpha1", Resource: "policies"}
 
-var policiesKind = schema.GroupVersionKind{Group: "ladoncontroller.k8s.io", Version: "v1alpha1", Kind: "Policy"}
+var policiesKind = schema.GroupVersionKind{Group: "ladoncontroller.k8s.io", Version: "v1alpha1", Kind: "LadonPolicy"}
 
 // Get takes name of the policy, and returns the corresponding policy object, and an error if there is any.
-func (c *FakePolicies) Get(name string, options v1.GetOptions) (result *v1alpha1.Policy, err error) {
+func (c *FakePolicies) Get(name string, options v1.GetOptions) (result *v1alpha1.LadonPolicy, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(policiesResource, c.ns, name), &v1alpha1.Policy{})
+		Invokes(testing.NewGetAction(policiesResource, c.ns, name), &v1alpha1.LadonPolicy{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Policy), err
+	return obj.(*v1alpha1.LadonPolicy), err
 }
 
 // List takes label and field selectors, and returns the list of Policies that match those selectors.
-func (c *FakePolicies) List(opts v1.ListOptions) (result *v1alpha1.PolicyList, err error) {
+func (c *FakePolicies) List(opts v1.ListOptions) (result *v1alpha1.LadonPolicyList, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(policiesResource, policiesKind, c.ns, opts), &v1alpha1.PolicyList{})
+		Invokes(testing.NewListAction(policiesResource, policiesKind, c.ns, opts), &v1alpha1.LadonPolicyList{})
 
 	if obj == nil {
 		return nil, err
@@ -62,8 +62,8 @@ func (c *FakePolicies) List(opts v1.ListOptions) (result *v1alpha1.PolicyList, e
 	if label == nil {
 		label = labels.Everything()
 	}
-	list := &v1alpha1.PolicyList{}
-	for _, item := range obj.(*v1alpha1.PolicyList).Items {
+	list := &v1alpha1.LadonPolicyList{}
+	for _, item := range obj.(*v1alpha1.LadonPolicyList).Items {
 		if label.Matches(labels.Set(item.Labels)) {
 			list.Items = append(list.Items, item)
 		}
@@ -79,31 +79,31 @@ func (c *FakePolicies) Watch(opts v1.ListOptions) (watch.Interface, error) {
 }
 
 // Create takes the representation of a policy and creates it.  Returns the server's representation of the policy, and an error, if there is any.
-func (c *FakePolicies) Create(policy *v1alpha1.Policy) (result *v1alpha1.Policy, err error) {
+func (c *FakePolicies) Create(policy *v1alpha1.LadonPolicy) (result *v1alpha1.LadonPolicy, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(policiesResource, c.ns, policy), &v1alpha1.Policy{})
+		Invokes(testing.NewCreateAction(policiesResource, c.ns, policy), &v1alpha1.LadonPolicy{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Policy), err
+	return obj.(*v1alpha1.LadonPolicy), err
 }
 
 // Update takes the representation of a policy and updates it. Returns the server's representation of the policy, and an error, if there is any.
-func (c *FakePolicies) Update(policy *v1alpha1.Policy) (result *v1alpha1.Policy, err error) {
+func (c *FakePolicies) Update(policy *v1alpha1.LadonPolicy) (result *v1alpha1.LadonPolicy, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(policiesResource, c.ns, policy), &v1alpha1.Policy{})
+		Invokes(testing.NewUpdateAction(policiesResource, c.ns, policy), &v1alpha1.LadonPolicy{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Policy), err
+	return obj.(*v1alpha1.LadonPolicy), err
 }
 
 // Delete takes name of the policy and deletes it. Returns an error if one occurs.
 func (c *FakePolicies) Delete(name string, options *v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(policiesResource, c.ns, name), &v1alpha1.Policy{})
+		Invokes(testing.NewDeleteAction(policiesResource, c.ns, name), &v1alpha1.LadonPolicy{})
 
 	return err
 }
@@ -112,17 +112,17 @@ func (c *FakePolicies) Delete(name string, options *v1.DeleteOptions) error {
 func (c *FakePolicies) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
 	action := testing.NewDeleteCollectionAction(policiesResource, c.ns, listOptions)
 
-	_, err := c.Fake.Invokes(action, &v1alpha1.PolicyList{})
+	_, err := c.Fake.Invokes(action, &v1alpha1.LadonPolicyList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched policy.
-func (c *FakePolicies) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.Policy, err error) {
+func (c *FakePolicies) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.LadonPolicy, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(policiesResource, c.ns, name, data, subresources...), &v1alpha1.Policy{})
+		Invokes(testing.NewPatchSubresourceAction(policiesResource, c.ns, name, data, subresources...), &v1alpha1.LadonPolicy{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Policy), err
+	return obj.(*v1alpha1.LadonPolicy), err
 }

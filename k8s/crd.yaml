@@ -6,9 +6,11 @@ spec:
   group: ladoncontroller.k8s.io
   version: v1alpha1
   names:
-    kind: Policy
-    singular: policy
-    plural: policies
+    kind: LadonPolicy
+    singular: ladonpolicy
+    plural: ladonpolicies
     shortNames:
-    - pl
+    - lpl
+    - lpolicies
+    - lpolicy
   scope: Namespaced

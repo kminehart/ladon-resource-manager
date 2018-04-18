@@ -27,26 +27,26 @@ import (
 	rest "k8s.io/client-go/rest"
 )
 
-// PoliciesGetter has a method to return a PolicyInterface.
+// PoliciesGetter has a method to return a LadonPolicyInterface.
 // A group's client should implement this interface.
 type PoliciesGetter interface {
-	Policies(namespace string) PolicyInterface
+	Policies(namespace string) LadonPolicyInterface
 }
 
-// PolicyInterface has methods to work with Policy resources.
-type PolicyInterface interface {
-	Create(*v1alpha1.Policy) (*v1alpha1.Policy, error)
-	Update(*v1alpha1.Policy) (*v1alpha1.Policy, error)
+// LadonPolicyInterface has methods to work with LadonPolicy resources.
+type LadonPolicyInterface interface {
+	Create(*v1alpha1.LadonPolicy) (*v1alpha1.LadonPolicy, error)
+	Update(*v1alpha1.LadonPolicy) (*v1alpha1.LadonPolicy, error)
 	Delete(name string, options *v1.DeleteOptions) error
 	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string, options v1.GetOptions) (*v1alpha1.Policy, error)
-	List(opts v1.ListOptions) (*v1alpha1.PolicyList, error)
+	Get(name string, options v1.GetOptions) (*v1alpha1.LadonPolicy, error)
+	List(opts v1.ListOptions) (*v1alpha1.LadonPolicyList, error)
 	Watch(opts v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.Policy, err error)
-	PolicyExpansion
+	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.LadonPolicy, err error)
+	LadonPolicyExpansion
 }
 
-// policies implements PolicyInterface
+// policies implements LadonPolicyInterface
 type policies struct {
 	client rest.Interface
 	ns     string
@@ -61,11 +61,11 @@ func newPolicies(c *LadoncontrollerV1alpha1Client, namespace string) *policies {
 }
 
 // Get takes name of the policy, and returns the corresponding policy object, and an error if there is any.
-func (c *policies) Get(name string, options v1.GetOptions) (result *v1alpha1.Policy, err error) {
-	result = &v1alpha1.Policy{}
+func (c *policies) Get(name string, options v1.GetOptions) (result *v1alpha1.LadonPolicy, err error) {
+	result = &v1alpha1.LadonPolicy{}
 	err = c.client.Get().
 		Namespace(c.ns).
-		Resource("policies").
+		Resource("ladonpolicies").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
 		Do().
@@ -74,11 +74,11 @@ func (c *policies) Get(name string, options v1.GetOptions) (result *v1alpha1.Pol
 }
 
 // List takes label and field selectors, and returns the list of Policies that match those selectors.
-func (c *policies) List(opts v1.ListOptions) (result *v1alpha1.PolicyList, err error) {
-	result = &v1alpha1.PolicyList{}
+func (c *policies) List(opts v1.ListOptions) (result *v1alpha1.LadonPolicyList, err error) {
+	result = &v1alpha1.LadonPolicyList{}
 	err = c.client.Get().
 		Namespace(c.ns).
-		Resource("policies").
+		Resource("ladonpolicies").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Do().
 		Into(result)
@@ -90,17 +90,17 @@ func (c *policies) Watch(opts v1.ListOptions) (watch.Interface, error) {
 	opts.Watch = true
 	return c.client.Get().
 		Namespace(c.ns).
-		Resource("policies").
+		Resource("ladonpolicies").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Watch()
 }
 
 // Create takes the representation of a policy and creates it.  Returns the server's representation of the policy, and an error, if there is any.
-func (c *policies) Create(policy *v1alpha1.Policy) (result *v1alpha1.Policy, err error) {
-	result = &v1alpha1.Policy{}
+func (c *policies) Create(policy *v1alpha1.LadonPolicy) (result *v1alpha1.LadonPolicy, err error) {
+	result = &v1alpha1.LadonPolicy{}
 	err = c.client.Post().
 		Namespace(c.ns).
-		Resource("policies").
+		Resource("ladonpolicies").
 		Body(policy).
 		Do().
 		Into(result)
@@ -108,11 +108,11 @@ func (c *policies) Create(policy *v1alpha1.Policy) (result *v1alpha1.Policy, err
 }
 
 // Update takes the representation of a policy and updates it. Returns the server's representation of the policy, and an error, if there is any.
-func (c *policies) Update(policy *v1alpha1.Policy) (result *v1alpha1.Policy, err error) {
-	result = &v1alpha1.Policy{}
+func (c *policies) Update(policy *v1alpha1.LadonPolicy) (result *v1alpha1.LadonPolicy, err error) {
+	result = &v1alpha1.LadonPolicy{}
 	err = c.client.Put().
 		Namespace(c.ns).
-		Resource("policies").
+		Resource("ladonpolicies").
 		Name(policy.Name).
 		Body(policy).
 		Do().
@@ -143,8 +143,8 @@ func (c *policies) DeleteCollection(options *v1.DeleteOptions, listOptions v1.Li
 }
 
 // Patch applies the patch and returns the patched policy.
-func (c *policies) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.Policy, err error) {
-	result = &v1alpha1.Policy{}
+func (c *policies) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.LadonPolicy, err error) {
+	result = &v1alpha1.LadonPolicy{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
 		Resource("policies").

@@ -28,7 +28,7 @@ type FakeLadoncontrollerV1alpha1 struct {
 	*testing.Fake
 }
 
-func (c *FakeLadoncontrollerV1alpha1) Policies(namespace string) v1alpha1.PolicyInterface {
+func (c *FakeLadoncontrollerV1alpha1) Policies(namespace string) v1alpha1.LadonPolicyInterface {
 	return &FakePolicies{c, namespace}
 }
 

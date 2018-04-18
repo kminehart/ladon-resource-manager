@@ -35,7 +35,7 @@ type LadoncontrollerV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *LadoncontrollerV1alpha1Client) Policies(namespace string) PolicyInterface {
+func (c *LadoncontrollerV1alpha1Client) Policies(namespace string) LadonPolicyInterface {
 	return newPolicies(c, namespace)
 }
 

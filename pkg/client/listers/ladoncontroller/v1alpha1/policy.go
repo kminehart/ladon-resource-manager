@@ -25,48 +25,48 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
-// PolicyLister helps list Policies.
-type PolicyLister interface {
+// LadonPolicyLister helps list Policies.
+type LadonPolicyLister interface {
 	// List lists all Policies in the indexer.
-	List(selector labels.Selector) (ret []*v1alpha1.Policy, err error)
+	List(selector labels.Selector) (ret []*v1alpha1.LadonPolicy, err error)
 	// Policies returns an object that can list and get Policies.
-	Policies(namespace string) PolicyNamespaceLister
-	PolicyListerExpansion
+	Policies(namespace string) LadonPolicyNamespaceLister
+	LadonPolicyListerExpansion
 }
 
-// policyLister implements the PolicyLister interface.
+// policyLister implements the LadonPolicyLister interface.
 type policyLister struct {
 	indexer cache.Indexer
 }
 
-// NewPolicyLister returns a new PolicyLister.
-func NewPolicyLister(indexer cache.Indexer) PolicyLister {
+// NewLadonPolicyLister returns a new LadonPolicyLister.
+func NewLadonPolicyLister(indexer cache.Indexer) LadonPolicyLister {
 	return &policyLister{indexer: indexer}
 }
 
 // List lists all Policies in the indexer.
-func (s *policyLister) List(selector labels.Selector) (ret []*v1alpha1.Policy, err error) {
+func (s *policyLister) List(selector labels.Selector) (ret []*v1alpha1.LadonPolicy, err error) {
 	err = cache.ListAll(s.indexer, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1alpha1.Policy))
+		ret = append(ret, m.(*v1alpha1.LadonPolicy))
 	})
 	return ret, err
 }
 
 // Policies returns an object that can list and get Policies.
-func (s *policyLister) Policies(namespace string) PolicyNamespaceLister {
+func (s *policyLister) Policies(namespace string) LadonPolicyNamespaceLister {
 	return policyNamespaceLister{indexer: s.indexer, namespace: namespace}
 }
 
-// PolicyNamespaceLister helps list and get Policies.
-type PolicyNamespaceLister interface {
+// LadonPolicyNamespaceLister helps list and get Policies.
+type LadonPolicyNamespaceLister interface {
 	// List lists all Policies in the indexer for a given namespace.
-	List(selector labels.Selector) (ret []*v1alpha1.Policy, err error)
-	// Get retrieves the Policy from the indexer for a given namespace and name.
-	Get(name string) (*v1alpha1.Policy, error)
-	PolicyNamespaceListerExpansion
+	List(selector labels.Selector) (ret []*v1alpha1.LadonPolicy, err error)
+	// Get retrieves the LadonPolicy from the indexer for a given namespace and name.
+	Get(name string) (*v1alpha1.LadonPolicy, error)
+	LadonPolicyNamespaceListerExpansion
 }
 
-// policyNamespaceLister implements the PolicyNamespaceLister
+// policyNamespaceLister implements the LadonPolicyNamespaceLister
 // interface.
 type policyNamespaceLister struct {
 	indexer   cache.Indexer
@@ -74,15 +74,15 @@ type policyNamespaceLister struct {
 }
 
 // List lists all Policies in the indexer for a given namespace.
-func (s policyNamespaceLister) List(selector labels.Selector) (ret []*v1alpha1.Policy, err error) {
+func (s policyNamespaceLister) List(selector labels.Selector) (ret []*v1alpha1.LadonPolicy, err error) {
 	err = cache.ListAllByNamespace(s.indexer, s.namespace, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1alpha1.Policy))
+		ret = append(ret, m.(*v1alpha1.LadonPolicy))
 	})
 	return ret, err
 }
 
-// Get retrieves the Policy from the indexer for a given namespace and name.
-func (s policyNamespaceLister) Get(name string) (*v1alpha1.Policy, error) {
+// Get retrieves the LadonPolicy from the indexer for a given namespace and name.
+func (s policyNamespaceLister) Get(name string) (*v1alpha1.LadonPolicy, error) {
 	obj, exists, err := s.indexer.GetByKey(s.namespace + "/" + name)
 	if err != nil {
 		return nil, err
@@ -90,5 +90,5 @@ func (s policyNamespaceLister) Get(name string) (*v1alpha1.Policy, error) {
 	if !exists {
 		return nil, errors.NewNotFound(v1alpha1.Resource("policy"), name)
 	}
-	return obj.(*v1alpha1.Policy), nil
+	return obj.(*v1alpha1.LadonPolicy), nil
 }
