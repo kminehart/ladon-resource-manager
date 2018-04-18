@@ -1,5 +1,5 @@
 apiVersion: ladoncontroller.k8s.io/v1alpha1
-kind: Policy
+kind: LadonPolicy
 metadata:
   name: consent-policy-users
 spec:
@@ -14,7 +14,7 @@ spec:
   effect: "allow"
 ---
 apiVersion: ladoncontroller.k8s.io/v1alpha1
-kind: Policy
+kind: LadonPolicy
 metadata:
   name: consent-policy-sesions
 spec:
