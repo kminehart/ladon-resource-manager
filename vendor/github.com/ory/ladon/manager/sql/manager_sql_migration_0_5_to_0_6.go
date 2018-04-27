@@ -1,16 +1,22 @@
-// Copyright © 2017 Aeneas Rekkas <aeneas+oss@aeneas.io>
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ * Copyright © 2016-2018 Aeneas Rekkas <aeneas+oss@aeneas.io>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * @author		Aeneas Rekkas <aeneas+oss@aeneas.io>
+ * @copyright 	2015-2018 Aeneas Rekkas <aeneas+oss@aeneas.io>
+ * @license 	Apache-2.0
+ */
 
 package sql
 
@@ -38,7 +44,7 @@ func (s *SQLManagerMigrateFromMajor0Minor6ToMajor0Minor7) GetManager() ladon.Man
 
 // Get retrieves a policy.
 func (s *SQLManagerMigrateFromMajor0Minor6ToMajor0Minor7) Migrate() error {
-	rows, err := s.DB.Query(s.DB.Rebind("SELECT id, description, effect, conditions FROM ladon_policy"))
+	rows, err := s.DB.Query(s.DB.Rebind("SELECT id, description, effect, conditions, meta FROM ladon_policy"))
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -49,7 +55,7 @@ func (s *SQLManagerMigrateFromMajor0Minor6ToMajor0Minor7) Migrate() error {
 		var p DefaultPolicy
 		var conditions []byte
 
-		if err := rows.Scan(&p.ID, &p.Description, &p.Effect, &conditions); err != nil {
+		if err := rows.Scan(&p.ID, &p.Description, &p.Effect, &conditions, &p.Meta); err != nil {
 			return errors.WithStack(err)
 		}
 
@@ -125,9 +131,14 @@ func (s *SQLManagerMigrateFromMajor0Minor6ToMajor0Minor7) Create(policy Policy) 
 		}
 	}
 
+	meta := []byte("{}")
+	if policy.GetMeta() != nil {
+		meta = policy.GetMeta()
+	}
+
 	if tx, err := s.DB.Begin(); err != nil {
 		return errors.WithStack(err)
-	} else if _, err = tx.Exec(s.DB.Rebind("INSERT INTO ladon_policy (id, description, effect, conditions) VALUES (?, ?, ?, ?)"), policy.GetID(), policy.GetDescription(), policy.GetEffect(), conditions); err != nil {
+	} else if _, err = tx.Exec(s.DB.Rebind("INSERT INTO ladon_policy (id, description, effect, conditions, meta) VALUES (?, ?, ?, ?, ?)"), policy.GetID(), policy.GetDescription(), policy.GetEffect(), conditions, meta); err != nil {
 		if err := tx.Rollback(); err != nil {
 			return errors.WithStack(err)
 		}

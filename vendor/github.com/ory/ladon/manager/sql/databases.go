@@ -1,3 +1,23 @@
+/*
+ * Copyright © 2016-2018 Aeneas Rekkas <aeneas+oss@aeneas.io>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * @author		Aeneas Rekkas <aeneas+oss@aeneas.io>
+ * @copyright 	2015-2018 Aeneas Rekkas <aeneas+oss@aeneas.io>
+ * @license 	Apache-2.0
+ */
+
 package sql
 
 import migrate "github.com/rubenv/sql-migrate"
@@ -116,9 +136,18 @@ var Migrations = map[string]Statements{
 						"DROP INDEX ladon_resource_compiled_idx",
 					},
 				},
+				{
+					Id: "4",
+					Up: []string{
+						"ALTER TABLE ladon_policy ADD COLUMN meta json",
+					},
+					Down: []string{
+						"ALTER TABLE ladon_policy DROP COLUMN IF EXISTS meta",
+					},
+				},
 			},
 		},
-		QueryInsertPolicy:             `INSERT INTO ladon_policy(id, description, effect, conditions) SELECT $1::varchar, $2, $3, $4 WHERE NOT EXISTS (SELECT 1 FROM ladon_policy WHERE id = $1)`,
+		QueryInsertPolicy:             `INSERT INTO ladon_policy(id, description, effect, conditions, meta) SELECT $1::varchar, $2, $3, $4, $5 WHERE NOT EXISTS (SELECT 1 FROM ladon_policy WHERE id = $1)`,
 		QueryInsertPolicyActions:      `INSERT INTO ladon_action (id, template, compiled, has_regex) SELECT $1::varchar, $2, $3, $4 WHERE NOT EXISTS (SELECT 1 FROM ladon_action WHERE id = $1)`,
 		QueryInsertPolicyActionsRel:   `INSERT INTO ladon_policy_action_rel (policy, action) SELECT $1::varchar, $2::varchar WHERE NOT EXISTS (SELECT 1 FROM ladon_policy_action_rel WHERE policy = $1 AND action = $2)`,
 		QueryInsertPolicyResources:    `INSERT INTO ladon_resource (id, template, compiled, has_regex) SELECT $1::varchar, $2, $3, $4 WHERE NOT EXISTS (SELECT 1 FROM ladon_resource WHERE id = $1)`,
@@ -131,6 +160,7 @@ var Migrations = map[string]Statements{
 			p.effect,
 			p.conditions,
 			p.description,
+			p.meta,
 			subject.template AS subject,
 			resource.template AS resource,
 			action.template AS action
@@ -167,9 +197,18 @@ var Migrations = map[string]Statements{
 						"DROP INDEX ladon_resource_compiled_idx",
 					},
 				},
+				{
+					Id: "4",
+					Up: []string{
+						"ALTER TABLE ladon_policy ADD COLUMN meta text",
+					},
+					Down: []string{
+						"ALTER TABLE ladon_policy DROP COLUMN meta",
+					},
+				},
 			},
 		},
-		QueryInsertPolicy:             `INSERT IGNORE INTO ladon_policy (id, description, effect, conditions) VALUES(?,?,?,?)`,
+		QueryInsertPolicy:             `INSERT IGNORE INTO ladon_policy (id, description, effect, conditions, meta) VALUES(?,?,?,?,?)`,
 		QueryInsertPolicyActions:      `INSERT IGNORE INTO ladon_action (id, template, compiled, has_regex) VALUES(?,?,?,?)`,
 		QueryInsertPolicyActionsRel:   `INSERT IGNORE INTO ladon_policy_action_rel (policy, action) VALUES(?,?)`,
 		QueryInsertPolicyResources:    `INSERT IGNORE INTO ladon_resource (id, template, compiled, has_regex) VALUES(?,?,?,?)`,
@@ -182,6 +221,7 @@ var Migrations = map[string]Statements{
 			p.effect,
 			p.conditions,
 			p.description,
+			p.meta,
 			subject.template AS subject,
 			resource.template AS resource,
 			action.template AS action

@@ -23,14 +23,17 @@ import (
 
 	kubeinformers "k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"k8s.io/client-go/tools/clientcmd"
 	// _ "k8s.io/code-generator/cmd/codegen"
 
+	"github.com/go-redis/redis"
 	"github.com/golang/glog"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	manager "github.com/ory/ladon/manager/sql"
-	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	"github.com/ory/ladon"
+	sqlmanager "github.com/ory/ladon/manager/sql"
+	redismanager "github.com/wehco/ladon-community/manager/redis"
 
 	clientset "github.com/kminehart/ladon-resource-manager/pkg/client/clientset/versioned"
 	informers "github.com/kminehart/ladon-resource-manager/pkg/client/informers/externalversions"
@@ -38,27 +41,51 @@ import (
 )
 
 var (
+	driver      string
 	postgresURL string
+	redisURL    string
+	redisPrefix string
 	masterURL   string
 	kubeconfig  string
 )
 
 func main() {
 	flag.Parse()
+
+	var m ladon.Manager
+
+	// Because some users might include both redis and postgres params, we'll prefer the more well-supported Postgres manager
 	if postgresURL == "" {
 		postgresURL = os.Getenv("POSTGRES_URL")
 	}
-	// Connect to the SQL server to create policies...
-	ladonDB, err := sqlx.Open("postgres", postgresURL)
-	if err != nil {
-		glog.Fatal(err.Error())
+	if redisURL == "" {
+		redisURL = os.Getenv("REDIS_URL")
 	}
-	defer ladonDB.Close()
 
-	sqlManager := manager.NewSQLManager(ladonDB, nil)
+	if postgresURL != "" {
+		// Connect to the SQL server to create policies...
+		ladonDB, err := sqlx.Open("postgres", postgresURL)
+		if err != nil {
+			glog.Fatal(err.Error())
+		}
+		defer func() {
+			if err := ladonDB.Close(); err != nil {
+				glog.Fatalln("Error closing ladon database. Error:", err.Error())
+			}
+		}()
+		sqlm := sqlmanager.NewSQLManager(ladonDB, nil)
+		if _, err := sqlm.CreateSchemas("ladon", "ladon_migrations"); err != nil {
+			glog.Fatal(err.Error())
+		}
+		m = sqlm
+	} else if redisURL != "" {
+		redisOptions, err := redis.ParseURL(redisURL)
+		if err != nil {
+			glog.Fatalln("Error parsing redis URL. Error:", err.Error())
+		}
 
-	if _, err := sqlManager.CreateSchemas("ladon", "ladon_migrations"); err != nil {
-		glog.Fatal(err.Error())
+		redisClient := redis.NewClient(redisOptions)
+		m = redismanager.NewRedisManager(redisClient, redisPrefix)
 	}
 
 	// set up signals so we handle the first shutdown signal gracefully
@@ -82,7 +109,7 @@ func main() {
 	var (
 		kubeInformerFactory  = kubeinformers.NewSharedInformerFactory(kubeClient, time.Second*30)
 		ladonInformerFactory = informers.NewSharedInformerFactory(ladonClient, time.Second*30)
-		controller           = NewController(kubeClient, ladonClient, kubeInformerFactory, ladonInformerFactory, sqlManager)
+		controller           = NewController(kubeClient, ladonClient, kubeInformerFactory, ladonInformerFactory, m)
 	)
 
 	go kubeInformerFactory.Start(stopCh)
@@ -97,4 +124,6 @@ func init() {
 	flag.StringVar(&kubeconfig, "kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
 	flag.StringVar(&masterURL, "master", "", "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
 	flag.StringVar(&postgresURL, "postgres-url", "", "The URL of the postgres server.")
+	flag.StringVar(&redisURL, "redis-url", "", "The connection string for the redis server")
+	flag.StringVar(&redisPrefix, "redis-prefix", "ladon", "The key prefix used for ladon keys")
 }

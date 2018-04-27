@@ -1,16 +1,22 @@
-// Copyright © 2017 Aeneas Rekkas <aeneas+oss@aeneas.io>
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ * Copyright © 2016-2018 Aeneas Rekkas <aeneas+oss@aeneas.io>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * @author		Aeneas Rekkas <aeneas+oss@aeneas.io>
+ * @copyright 	2015-2018 Aeneas Rekkas <aeneas+oss@aeneas.io>
+ * @license 	Apache-2.0
+ */
 
 package sql
 
@@ -130,11 +136,16 @@ func (s *SQLManager) create(policy Policy, tx *sqlx.Tx) (err error) {
 		}
 	}
 
+	meta := []byte("{}")
+	if policy.GetMeta() != nil {
+		meta = policy.GetMeta()
+	}
+
 	if _, ok := Migrations[s.database]; !ok {
 		return errors.Errorf("Database %s is not supported", s.database)
 	}
 
-	if _, err = tx.Exec(s.db.Rebind(Migrations[s.database].QueryInsertPolicy), policy.GetID(), policy.GetDescription(), policy.GetEffect(), conditions); err != nil {
+	if _, err = tx.Exec(s.db.Rebind(Migrations[s.database].QueryInsertPolicy), policy.GetID(), policy.GetDescription(), policy.GetEffect(), conditions, meta); err != nil {
 		return errors.WithStack(err)
 	}
 
@@ -211,7 +222,7 @@ func scanRows(rows *sql.Rows) (Policies, error) {
 		p.Subjects = []string{}
 		p.Resources = []string{}
 
-		if err := rows.Scan(&p.ID, &p.Effect, &conditions, &p.Description, &subject, &resource, &action); err == sql.ErrNoRows {
+		if err := rows.Scan(&p.ID, &p.Effect, &conditions, &p.Description, &p.Meta, &subject, &resource, &action); err == sql.ErrNoRows {
 			return nil, NewErrResourceNotFound(err)
 		} else if err != nil {
 			return nil, errors.WithStack(err)
@@ -265,7 +276,7 @@ func scanRows(rows *sql.Rows) (Policies, error) {
 }
 
 var getQuery = `SELECT
-	p.id, p.effect, p.conditions, p.description,
+	p.id, p.effect, p.conditions, p.description, p.meta,
 	subject.template as subject, resource.template as resource, action.template as action
 FROM
 	ladon_policy as p
@@ -281,7 +292,7 @@ LEFT JOIN ladon_resource as resource ON rr.resource = resource.id
 WHERE p.id=?`
 
 var getAllQuery = `SELECT
-	p.id, p.effect, p.conditions, p.description,
+	p.id, p.effect, p.conditions, p.description, p.meta,
 	subject.template as subject, resource.template as resource, action.template as action
 FROM
 	(SELECT * from ladon_policy ORDER BY id LIMIT ? OFFSET ?) as p

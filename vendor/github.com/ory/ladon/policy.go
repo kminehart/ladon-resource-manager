@@ -1,16 +1,22 @@
-// Copyright © 2017 Aeneas Rekkas <aeneas+oss@aeneas.io>
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ * Copyright © 2016-2018 Aeneas Rekkas <aeneas+oss@aeneas.io>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * @author		Aeneas Rekkas <aeneas+oss@aeneas.io>
+ * @copyright 	2015-2018 Aeneas Rekkas <aeneas+oss@aeneas.io>
+ * @license 	Apache-2.0
+ */
 
 package ladon
 
@@ -49,6 +55,9 @@ type Policy interface {
 	// GetConditions returns the policies conditions.
 	GetConditions() Conditions
 
+	// GetMeta returns the policies arbitrary metadata set by the user.
+	GetMeta() []byte
+
 	// GetStartDelimiter returns the delimiter which identifies the beginning of a regular expression.
 	GetStartDelimiter() byte
 
@@ -65,6 +74,7 @@ type DefaultPolicy struct {
 	Resources   []string   `json:"resources" gorethink:"resources"`
 	Actions     []string   `json:"actions" gorethink:"actions"`
 	Conditions  Conditions `json:"conditions" gorethink:"conditions"`
+	Meta        []byte     `json:"meta" gorethink:"meta"`
 }
 
 // UnmarshalJSON overwrite own policy with values of the given in policy in JSON format
@@ -77,6 +87,7 @@ func (p *DefaultPolicy) UnmarshalJSON(data []byte) error {
 		Resources   []string   `json:"resources" gorethink:"resources"`
 		Actions     []string   `json:"actions" gorethink:"actions"`
 		Conditions  Conditions `json:"conditions" gorethink:"conditions"`
+		Meta        []byte     `json:"meta" gorethink:"meta"`
 	}{
 		Conditions: Conditions{},
 	}
@@ -93,7 +104,17 @@ func (p *DefaultPolicy) UnmarshalJSON(data []byte) error {
 		Resources:   pol.Resources,
 		Actions:     pol.Actions,
 		Conditions:  pol.Conditions,
+		Meta:        pol.Meta,
 	}
+	return nil
+}
+
+// UnmarshalMeta parses the policies []byte encoded metadata and stores the result in the value pointed to by v.
+func (p *DefaultPolicy) UnmarshalMeta(v interface{}) error {
+	if err := json.Unmarshal(p.Meta, &v); err != nil {
+		return errors.WithStack(err)
+	}
+
 	return nil
 }
 
@@ -135,6 +156,11 @@ func (p *DefaultPolicy) GetActions() []string {
 // GetConditions returns the policies conditions.
 func (p *DefaultPolicy) GetConditions() Conditions {
 	return p.Conditions
+}
+
+// GetMeta returns the policies arbitrary metadata set by the user.
+func (p *DefaultPolicy) GetMeta() []byte {
+	return p.Meta
 }
 
 // GetEndDelimiter returns the delimiter which identifies the end of a regular expression.
