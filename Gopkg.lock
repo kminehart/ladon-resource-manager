@@ -284,7 +284,7 @@
   branch = "master"
   name = "github.com/wehco/ladon-community"
   packages = ["manager/redis"]
-  revision = "3c555bbe8651fd9dbf6bddcb88476ae49b293148"
+  revision = "e3b5da92c18b7bae58a86458465632001a33029a"
 
 [[projects]]
   branch = "master"
